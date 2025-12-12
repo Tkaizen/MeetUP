@@ -19,17 +19,15 @@
             "dest": "backend/src/index.js"
         },
         {
-            "src": "/(.*)",
+            "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|json|woff|woff2|ttf|eot))",
             "dest": "/$1"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
         }
     ],
     "env": {
         "NODE_ENV": "production"
-    },
-    "rewrites": [
-        {
-            "source": "/api/:path*",
-            "destination": "backend/src/index.js"
-        }
-    ]
+    }
 }
