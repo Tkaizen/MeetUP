@@ -2,7 +2,17 @@ import User from "../models/user.model.js";
 import Message from "../models/message.model.js";
 
 import cloudinary from "../lib/cloudinary.js";
-import { getReceiverSocketId, io } from "../lib/socket.js";
+
+// Socket.IO is optional - only works in non-serverless environments
+let io, getReceiverSocketId;
+try {
+    const socketModule = await import("../lib/socket.js");
+    io = socketModule.io;
+    getReceiverSocketId = socketModule.getReceiverSocketId;
+} catch (error) {
+    console.log("Socket.IO not available in serverless mode");
+}
+
 
 export const getUsersForSidebar = async (req, res) => {
     try {
@@ -57,9 +67,12 @@ export const sendMessage = async (req, res) => {
 
         await newMessage.save();
 
-        const receiverSocketId = getReceiverSocketId(receiverId);
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("newMessage", newMessage);
+        // Only emit socket event if Socket.IO is available
+        if (io && getReceiverSocketId) {
+            const receiverSocketId = getReceiverSocketId(receiverId);
+            if (receiverSocketId) {
+                io.to(receiverSocketId).emit("newMessage", newMessage);
+            }
         }
 
         res.status(201).json(newMessage);
